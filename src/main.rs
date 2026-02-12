@@ -24,25 +24,22 @@ fn main() -> Status {
         Ok(cstr) => cstr,
         Err(e) => {
             return standard_error(&format!("Failed to convert {FUM_NAME} to CStr16: {e}"));
-        },
+        }
     };
 
     let mut fum_buf = [0; 256];
     debug!("Reading {FUM_NAME}-{DASHARO_GUID}");
-    let (variable_buf, attr) = match uefi::runtime::get_variable(cstr_fum_name, &DASHARO_VENDOR, &mut fum_buf) {
-        Ok(v) => v,
-        Err(e) => {
-            match e.status() {
+    let (variable_buf, attr) =
+        match uefi::runtime::get_variable(cstr_fum_name, &DASHARO_VENDOR, &mut fum_buf) {
+            Ok(v) => v,
+            Err(e) => match e.status() {
                 Status::NOT_FOUND => {
                     println!("{FUM_NAME} variable not found");
-                    return Status::SUCCESS
-                },
-                _ => {
-                    return standard_error(&format!("Failed to read {FUM_NAME} variable: {e}"))
+                    return Status::SUCCESS;
                 }
-            }
-        },
-    };
+                _ => return standard_error(&format!("Failed to read {FUM_NAME} variable: {e}")),
+            },
+        };
     debug!("Attributes: {:?}", attr);
     debug!("Deleting {FUM_NAME}-{DASHARO_GUID}");
     if let Err(e) = uefi::runtime::delete_variable(cstr_fum_name, &DASHARO_VENDOR) {
@@ -53,11 +50,13 @@ fn main() -> Status {
         Ok(cstr) => cstr,
         Err(e) => {
             return standard_error(&format!("Failed to convert {FUM_RT_NAME} to CStr16: {e}"));
-        },
+        }
     };
     debug!("Setting new variable: {FUM_RT_NAME}-{DASHARO_GUID}");
     debug!("Variable attributes: {:?}", attr);
-    if let Err(e) = uefi::runtime::set_variable(cstr_fum_rt_name, &DASHARO_VENDOR, attr, &variable_buf) {
+    if let Err(e) =
+        uefi::runtime::set_variable(cstr_fum_rt_name, &DASHARO_VENDOR, attr, &variable_buf)
+    {
         return standard_error(&format!("Failed to create {FUM_RT_NAME}: {e}"));
     }
     println!("Replaced {FUM_NAME} with {FUM_RT_NAME}");
