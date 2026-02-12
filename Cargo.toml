@@ -1,0 +1,8 @@
+[package]
+name = "replace_fum_efivar"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+log = { version = "0.4.29", features = ["release_max_level_info"] }
+uefi = { version = "0.36.1", default-features = false, features = ["alloc", "global_allocator", "logger"] }
